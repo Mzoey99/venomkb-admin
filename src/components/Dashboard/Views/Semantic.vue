@@ -1,7 +1,7 @@
 <template>
   <div class="content">
                 <b-row>
-                    <b-col>
+                    <b-col class="col-md-6">
                         <b-card>
                         <div class="semantic">
                             <div id="editor_holder">
@@ -10,10 +10,18 @@
                         </div>
                         </b-card>
                     </b-col>
-                    <b-col>
+                    <b-col class="col-md-6">
                         <b-card>
                             <h4>The result is </h4>
-                            {{result}}
+                            <div v-for="(value, key) in result" :key="key">
+                                <card>
+                                    <ul class="horizontalList">
+                                        <li v-for="(object_value, object_key) in value" :key="object_key">
+                                            {{object_key}}: {{object_value}} 
+                                        </li>
+                                    </ul>  
+                                </card>
+                            </div>
                         </b-card>
                     </b-col>
                 </b-row>
@@ -184,7 +192,9 @@ export default {
         no_additional_properties: true,
         disable_array_reorder: true,
         disable_edit_json: true,
-        disable_properties: true
+        disable_properties: true,
+        prompt_before_delete: false,
+        iconlib: "fontawesome4"
         });
 
         // Get the value
@@ -257,11 +267,33 @@ export default {
         },
         submit() {
             this.$http.post("http://localhost:3001/semantic", this.data).then(response => {
-                console.log(response.data);
-                
                 this.result = response.data;
+                this.showSuccess();
             }).catch(err => {
                 console.log(err);
+                this.showError();
+            })
+        },
+        showError() {
+            const notification = {
+                template: `<span> <b> Error during query ! </b> - Please check your form ...</span>`
+            }
+            this.notifyVue("top", "center", notification, "danger", "nc-simple-remove");
+        },
+        showSuccess() {
+            const notification = {
+                template: `<span> <b> Successful Query ! </b></span>`
+            }
+            this.notifyVue("top", "center", notification, "success", "nc-check-2");
+        },
+        notifyVue (verticalAlign, horizontalAlign, notification, color, icon) {
+            this.$notifications.notify(
+            {
+                component: notification,
+                icon: 'nc-icon ' + icon,
+                horizontalAlign: horizontalAlign,
+                verticalAlign: verticalAlign,
+                type: color
             })
         }
     }
